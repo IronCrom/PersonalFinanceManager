@@ -52,7 +52,7 @@ public class Main {
                         fullStat.put(byu.getDate(), statForDay);
                     }
                     oos.writeObject(fullStat);
-                    out.println(Stat.statToJson(fullStat));
+                    out.println(Stat.statToJson(fullStat, byu.getDate()));
                 }
             }
         } catch (IOException e) {

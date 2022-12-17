@@ -7,10 +7,17 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         Map<String, String> categories = new HashMap<>();
         HashMap<LocalDate, HashMap<String, Long>> fullStat = new HashMap<>();
-
+        File binFile = new File("data.bin");
+        if (binFile.exists()) {
+            try (FileInputStream fis = new FileInputStream(binFile);
+                 ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                fullStat = (HashMap<LocalDate, HashMap<String, Long>>) ois.readObject();
+            }
+        }
         try (Scanner scanner = new Scanner(new FileInputStream("categories.tsv"))
         ) {
             while (scanner.hasNextLine()) {
@@ -25,7 +32,9 @@ public class Main {
             while (true) {
                 try (Socket client = serverSocket.accept();// ждем подключения
                      PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-                     BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()))
+                     BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                     FileOutputStream fos = new FileOutputStream("data.bin");
+                     ObjectOutputStream oos = new ObjectOutputStream(fos)
                 ) {
                     Byu byu = Byu.byuFromJson(in.readLine());
 
@@ -42,6 +51,7 @@ public class Main {
                         statForDay.put(byu.getTitle(), byu.getSum());
                         fullStat.put(byu.getDate(), statForDay);
                     }
+                    oos.writeObject(fullStat);
                     out.println(Stat.statToJson(fullStat));
                 }
             }
